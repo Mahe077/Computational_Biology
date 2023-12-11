@@ -1,0 +1,74 @@
+# Python program to search the DNA Sequence for the presence of one of the Transcription Factor Binding Sites(TFBS) with ambiguity codes.
+import re
+
+
+def search_tfbs(sequence, tfbs_dict):
+    results = {}
+    for tf, consensus_seq in tfbs_dict.items():
+        pattern = re.compile(consensus_seq.replace('N', '.'))
+        matches = [(match.start(), match.end()) for match in pattern.finditer(sequence)]
+        if matches:
+            results[tf] = matches
+    return results
+
+
+# DNA sequence
+search_seq = """
+GACACCTCAGTACTAGGATGNNNNNNTATCAGCCTGAACTAGCAGGCCTGGTTCCAAATT
+TTTTTATCAACACTCGTAGGGGGATTATCCTAGAGGGGGTCTGGGATTTCTTTGACATCA
+GAGTATTTTTGCCTTGCTCCTTCACAATTTGGGAACAAATAATTTAGTGGTTATTAACCC
+TGGCTACGCACTGGAAACTTTAAAAATAATGCTGGTATGAAATTTACACAGAGTATCGTG
+AAAATTTTCACTGAGTACCATGTGGTTATACATTGGATAAGGCTCCAGGAAGCAGCTACT
+GGAAGACAGCCATGCCAAGAGTGGTTAGTGGTTGGAATTTTGGCAAGTCAGTTTTAGTCT
+GCCTTATCAAATACATGGGCATACAGATAAATCCTTAGATGGCTCTCCTACTTACTGAAA
+CATTTTCTATCTATCTATCTATCTATCTATCTATTTGGGAAGCTATCTATCTATCTATCA
+TTTATTTAAGGTAGTCTCTATCTGCCTCTGTCTCTGTCTGTCTCTGTGTCTCTGTGTCTG
+TCTGCTCTCTCTCTCTCTCTGTGGGAATCTCTCTCTGTGTGTGTGTGTGTATGTGTGTGT
+GTGTGTGTGTGGTGTGCATGAACATGAGTAAAATCCATAAGGAAACTTTCAGAGTTGGTC
+CTCTCCTTATATCAAATGGATCCAGGAATTAAACTCAGGTTCAATTCTTGGTGCCTTTAC
+TAGTTGAGCCATCTCACTGGCTCTTCATCATCTTTAGAATAAACTCACTTTATTACACAC
+ACACACACACACACAACCTGGGAGTACACACACACACACAACCAAAGCCCCAACGGAAAA
+CTACAATATTATAATGAATACACAGGTTCTCAACATAGTCTCTGCCACGCTTGCAGACAA
+AGATGAGTAGAAGTAGAAAGAACCAGGGAAACGTGGAGCAAGTCAGAAGGAATAACAGTC
+AGAAGGAATAACAGTCAGAAGGAATAACAGTCAGAAGGAGTAACAGTCAGAAGGAATAGC
+AGTCAGAAGGAATAACAGTCAGAAGACAGCACAGTCAGAAGGAATAACAGTCAGAAGGAA
+TAACAGTCAGAAGGAATAACAGTCAGAAGGAATAACAGTCAGAAGGAATAGCAGTCAGAA
+GGAATAACAGTCAGAAGGAATAACAGTCAGAAGGAATAACAGTCAAAGAAATAGCAGTCA
+GAAGGAATAGCAGTCAGAAGGAATAACAGTCAAAGGAGCAGTCAGAAGGAGTAACAGTCA
+GAAGGAATAACAGTCAGAAGGAATAACAGTCAAAGGAATAGCAGTCAGAAGGAGTAACAG
+TCAGAGCAAACACAGAGATGACAAAGGCAATGGGGTCAGAGACTTCACCACTCTCCAAGA
+"""
+
+tfbs_dict = {
+    'RUNX1': 'BHTGTGGTYW',
+    'TGIF1': 'WGACAGB',
+    'IKZF1': 'BTGGGARD'
+}
+
+
+def replace_ambiguous_bases(consensus_sequence):
+    modified_sequence = consensus_sequence\
+        .replace('Y', '[CT]')\
+        .replace('R', '[AG]')\
+        .replace('W', '[AT]')\
+        .replace('S', '[CG]')\
+        .replace('K', '[TG]')\
+        .replace('M', '[AC]')\
+        .replace('D', '[AGT]')\
+        .replace('V', '[ACG]')\
+        .replace('H', '[ACT]')\
+        .replace('B', '[CGT]')
+    return modified_sequence
+
+
+# Replace ambiguity codes with '[ACGT]' in each TFBS consensus sequence
+for tf, consensus_seq in tfbs_dict.items():
+    modified_sequence = replace_ambiguous_bases(consensus_seq)
+    tfbs_dict[tf] = modified_sequence
+
+results = search_tfbs(search_seq, tfbs_dict)
+
+for tf, positions in results.items():
+    print(f"TF: {tf} with Concensus Seq: '{tfbs_dict[tf]}' found at positions: {positions}")
+    for pos in positions:
+        print("Sequence:", search_seq[pos[0]:pos[1]])
